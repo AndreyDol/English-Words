@@ -8,7 +8,7 @@ import axios from 'axios';
 const DEBOUNCE_DELAY = 1300;
 let translatedText;
 let word = "";
-let sound;
+
 // Пошук поля вводу та місця для додавання списку в DOM
 const refs = {
   name: document.querySelector('#search-box'),
@@ -19,11 +19,13 @@ const refs = {
   buttonPlay: document.querySelector('.button-play'),
 };
 
-
+const sound = new Audio(
+  `https://api.dictionaryapi.dev/media/pronunciations/en/son-us.mp3`);
 
 refs.buttonPlay.addEventListener("click", playSound);
 
 function playSound() {
+  sound.play();
   word = refs.name.value.trim();
   if (word !== '') {
     try {
@@ -31,7 +33,7 @@ function playSound() {
       const audio = new Audio(
         `https://api.dictionaryapi.dev/media/pronunciations/en/${word}-us.mp3`
       );
-      sound.play();
+      audio.play();
     } catch (e) {
       console.log(e);
     }
@@ -66,9 +68,7 @@ function onSearch(event) {
       refs.ruWord.value = translatedText;
       let translatePair = [inputEl, refs.ruWord.value]; ; 
       console.log(translatePair);
-      sound = new Audio(
-        `https://api.dictionaryapi.dev/media/pronunciations/en/${word}-us.mp3`);
-
+playSound();
 
       // do something with the translated text
     })
