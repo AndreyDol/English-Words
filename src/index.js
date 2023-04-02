@@ -22,6 +22,7 @@ let word ="";
 refs.buttonPlay.addEventListener("click", playSound);
 
 function playSound() {
+  word = refs.name.value.trim();
   if (word !== '') {
     try {
       console.log('Play sound');
@@ -41,7 +42,7 @@ refs.name.addEventListener('input', debounce(onSearch, DEBOUNCE_DELAY));
 function onSearch(event) {
     // записуємо в змінну введене значення користувачем (trim прибирає пробіли)
     let inputEl = refs.name.value.trim();
-  word = inputEl;
+ // word = inputEl;
 // очистка списку країн та інформації про країну
     refs.countriesInfo.innerHTML = "";
     refs.countriesList.innerHTML = "";
