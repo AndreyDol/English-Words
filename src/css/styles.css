@@ -53,5 +53,10 @@ body {
 
 .button-play{
   padding: 10px 13px;
-  border-radius: 40;
+  border-radius: 5%;
+}
+
+.button-add{
+  padding: 10px 13px;
+  border-radius: 5%;
 }
