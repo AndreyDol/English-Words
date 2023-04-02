@@ -5,10 +5,9 @@ import './css/styles.css';
 import debounce from 'lodash.debounce';
 import Notiflix from 'notiflix';
 import axios from 'axios';
-const DEBOUNCE_DELAY = 1300;
+const DEBOUNCE_DELAY = 700;
 let translatedText;
-let word = "";
-
+let word ="";
 // Пошук поля вводу та місця для додавання списку в DOM
 const refs = {
   name: document.querySelector('#search-box'),
@@ -19,14 +18,12 @@ const refs = {
   buttonPlay: document.querySelector('.button-play'),
 };
 
-const sound = new Audio(
-  `https://api.dictionaryapi.dev/media/pronunciations/en/son-us.mp3`);
+
 
 refs.buttonPlay.addEventListener("click", playSound);
 
 function playSound() {
-  sound.play();
-  word = refs.name.value.trim();
+  word = refs.name.value.trim().toLowerCase();
   if (word !== '') {
     try {
       console.log('Play sound');
