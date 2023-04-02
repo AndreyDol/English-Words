@@ -22,7 +22,7 @@ let word ="";
 refs.buttonPlay.addEventListener("click", playSound);
 
 function playSound() {
-  if (word != '') {
+  if (word !== '') {
     try {
       console.log('Play sound');
       const audio = new Audio(
