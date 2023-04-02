@@ -18,6 +18,14 @@ body {
   max-width: 320px;
   margin-bottom: 16px;
 }
+#ru-box {
+  font: inherit;
+  padding: 8px;
+  max-width: 320px;
+  margin-bottom: 16px;
+}
+
+
 
 .list{
   list-style: none;
@@ -41,4 +49,9 @@ body {
   align-items: baseline;
   gap: 20px;
 
+}
+
+.button-play{
+  padding: 10px 13px;
+  border-radius: 40;
 }

@@ -10,6 +10,7 @@ let translatedText;
 // Пошук поля вводу та місця для додавання списку в DOM
 const refs = {
   name: document.querySelector('#search-box'),
+  ruWord: document.querySelector('#ru-box'),
   countriesList: document.querySelector('.country-list'),
   countriesInfo: document.querySelector('.country-info'),
   translateText: document.querySelector('.translate-text'),
@@ -59,8 +60,8 @@ function onSearch(event) {
       translatedText = response.data[0][0][0];
       
       console.log(translatedText);
-      refs.translateText.textContent = translatedText;
-      let translatePair = [ inputEl,translatedText] ; 
+      refs.ruWord.value = translatedText;
+      let translatePair = [inputEl, refs.ruWord.value]; ; 
       console.log(translatePair);
 playSound();
 
