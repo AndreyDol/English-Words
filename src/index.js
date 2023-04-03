@@ -8,12 +8,10 @@ import axios from 'axios';
 const DEBOUNCE_DELAY = 700;
 let translatedText;
 let word = '';
-let data = 
-  {
-    array: [],
-    id: '1',
-  }
-;
+let data = {
+  array: [],
+  id: '1',
+};
 let randomWord = '';
 
 const URL = 'https://64298cb1ebb1476fcc4bb610.mockapi.io';
@@ -55,7 +53,6 @@ readData().then(res => {
   }
   data = res[0];
   randomWord = randomGenWord();
-  console.log(randomWord);
   refs.engText.textContent = data.array[randomWord][0];
   //
   // console.log(data.array);
@@ -76,15 +73,18 @@ refs.buttonNext.addEventListener('click', next);
 refs.buttonDel.addEventListener('click', delInBase);
 
 function delInBase() {
-  index = data.array.indexOf(randomWord);
-  data.array.splice(index, 1);
-  console.log(data);
+  data.array.splice(randomWord, 1);
+  console.log(randomWord);
+  Notiflix.Notify.info(`Word ${refs.engText.textContent} deleted`);
   updateData(1, data);
-  Notiflix.Notify.info(`Word ${randomWord[0]} deleted`);
+   randomWord = randomGenWord();
+   refs.engText.textContent = data.array[randomWord][0];
+   playSoundEng();
+   refs.ruText.textContent = '?';
 }
 
 function next() {
-  console.log(data.array[random(data.array.length)][0]);
+  // console.log(data.array[random(data.array.length)][0]);
   if (refs.ruText.textContent === '?')
     refs.ruText.textContent = data.array[randomWord][1];
   else {
@@ -94,6 +94,13 @@ function next() {
     refs.ruText.textContent = '?';
   }
 }
+function checkWordInBase() {
+  if (data.array[0] === undefined) return true;
+  for (var i = 0; i < data.array.length; i++) {
+    if (data.array[i][0] === refs.engWord.value.toLowerCase()) return false;
+  }
+  return true;
+}
 
 //додає слова в базу
 function addToBase() {
@@ -101,20 +108,25 @@ function addToBase() {
     refs.engWord.value.toLowerCase(),
     refs.ruWord.value.toLowerCase(),
   ];
-  if (data !== '' && refs.engWord.value !== '' && refs.ruWord.value !== '') {
-    // console.log(data);
+
+  if (
+    refs.engWord.value !== '' &&
+    refs.ruWord.value !== '' &&
+    checkWordInBase()  ) {
+    console.log(data);
     data.array.push(translatePair);
     console.log(data);
     updateData(1, data);
-  }
-  console.log(translatePair);
+    Notiflix.Notify.success(`Words added to base. Now - ${data.array.length} `);
+  } else if (!checkWordInBase()) Notiflix.Notify.info(`Word already in base.`);
+  else Notiflix.Notify.warning(`Input eng word`);
+  // console.log(translatePair);
 }
 
 function playSound() {
   word = refs.engWord.value.trim().toLowerCase();
   if (word !== '') {
     try {
-      console.log('Play sound');
       const audio = new Audio(
         `https://api.dictionaryapi.dev/media/pronunciations/en/${word}-us.mp3`
       );
