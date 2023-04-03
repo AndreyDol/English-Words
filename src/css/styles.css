@@ -51,7 +51,7 @@ body {
 
 }
 
-.button-play{
+.button-play,.button-play-eng, .button-del,.button-next{
   padding: 10px 17px;
   border-radius: 5%;
 }
@@ -60,3 +60,33 @@ body {
   padding: 10px 13px;
   border-radius: 5%;
 }
+.eng-text{
+  
+  font-size:40px;
+  font-weight: 700;
+  margin-left: 10px;
+  margin-top: 0;
+    margin-bottom: 20px;
+}
+.ru-text{
+  
+  font-size:40px;
+  font-weight: 400;
+  margin-left: 10px;
+  margin-top: 0;
+    margin-bottom: 20px;
+}
+
+ .button-wrap{
+display: flex;
+justify-content: space-between;
+width: 270px;
+margin: 10px;
+ }
+
+ .text-wrap{
+width: 300px;
+text-align: center;
+margin-top: 50px;
+margin-bottom: 80px;
+ }

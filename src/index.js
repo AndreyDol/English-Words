@@ -8,7 +8,14 @@ import axios from 'axios';
 const DEBOUNCE_DELAY = 700;
 let translatedText;
 let word = '';
-let data=[];
+let data = 
+  {
+    array: [],
+    id: '1',
+  }
+;
+let randomWord = '';
+
 const URL = 'https://64298cb1ebb1476fcc4bb610.mockapi.io';
 
 // Пошук поля вводу та місця для додавання списку в DOM
@@ -17,12 +24,20 @@ const refs = {
   ruWord: document.querySelector('#ru-box'),
   countriesList: document.querySelector('.country-list'),
   countriesInfo: document.querySelector('.country-info'),
-  translateText: document.querySelector('.translate-text'),
+  engText: document.querySelector('.eng-text'),
+  ruText: document.querySelector('.ru-text'),
   buttonPlay: document.querySelector('.button-play'),
+  buttonPlayEng: document.querySelector('.button-play-eng'),
   buttonAdd: document.querySelector('.button-add'),
   buttonNext: document.querySelector('.button-next'),
+  buttonDel: document.querySelector('.button-del'),
 };
-//Приймає данні зсайту 
+//Герерация рамдомного числа
+const random = namber => Math.floor(Math.random() * namber);
+//Генерациярандомного слова з бази
+const randomGenWord = () => random(data.array.length);
+
+//Приймає данні зсайту
 const readData = () => {
   return fetch(`${URL}/data`).then(res => {
     if (res.ok) {
@@ -34,9 +49,16 @@ const readData = () => {
 };
 
 readData().then(res => {
+  if (res[0].array.length === 0) {
+    Notiflix.Notify.info(`Base empty(База пуста, додайте слова)`);
+    return;
+  }
   data = res[0];
-  // console.log(data);
- // console.log(data.array);
+  randomWord = randomGenWord();
+  console.log(randomWord);
+  refs.engText.textContent = data.array[randomWord][0];
+  //
+  // console.log(data.array);
 });
 //Записує данні на сайт
 const updateData = (id, dataPut) => {
@@ -48,15 +70,39 @@ const updateData = (id, dataPut) => {
 };
 
 refs.buttonPlay.addEventListener('click', playSound);
+refs.buttonPlayEng.addEventListener('click', playSoundEng);
 refs.buttonAdd.addEventListener('click', addToBase);
- //додає слова в базу 
+refs.buttonNext.addEventListener('click', next);
+refs.buttonDel.addEventListener('click', delInBase);
+
+function delInBase() {
+  index = data.array.indexOf(randomWord);
+  data.array.splice(index, 1);
+  console.log(data);
+  updateData(1, data);
+  Notiflix.Notify.info(`Word ${randomWord[0]} deleted`);
+}
+
+function next() {
+  console.log(data.array[random(data.array.length)][0]);
+  if (refs.ruText.textContent === '?')
+    refs.ruText.textContent = data.array[randomWord][1];
+  else {
+    randomWord = randomGenWord();
+    refs.engText.textContent = data.array[randomWord][0];
+    playSoundEng();
+    refs.ruText.textContent = '?';
+  }
+}
+
+//додає слова в базу
 function addToBase() {
   let translatePair = [
     refs.engWord.value.toLowerCase(),
-    refs.ruWord.value.toLowerCase()
+    refs.ruWord.value.toLowerCase(),
   ];
-  if (data !== '' && refs.engWord.value !== '' && refs.ruWord.value !== "") {
-   // console.log(data);
+  if (data !== '' && refs.engWord.value !== '' && refs.ruWord.value !== '') {
+    // console.log(data);
     data.array.push(translatePair);
     console.log(data);
     updateData(1, data);
@@ -78,16 +124,26 @@ function playSound() {
     }
   }
 }
-
+function playSoundEng() {
+  word = refs.engText.textContent.toLowerCase();
+  if (word !== '') {
+    try {
+      console.log('Play sound');
+      const audio = new Audio(
+        `https://api.dictionaryapi.dev/media/pronunciations/en/${word}-us.mp3`
+      );
+      audio.play();
+    } catch (e) {
+      console.log(e);
+    }
+  }
+}
 // Додає слухача та використовує функцію debounce, яка робить HTTP-запит через 300мс після того, як користувач перестав вводити текст
 refs.engWord.addEventListener('input', debounce(onSearch, DEBOUNCE_DELAY));
 
 function onSearch(event) {
   // записуємо в змінну введене значення користувачем (trim прибирає пробіли)
   let input = refs.engWord.value.trim();
-  // очистка списку країн та інформації про країну
-  refs.countriesInfo.innerHTML = '';
-  refs.countriesList.innerHTML = '';
 
   // перевірка, якщо значення не пустий рядок
 
@@ -102,7 +158,7 @@ function onSearch(event) {
       .then(function (response) {
         translatedText = response.data[0][0][0];
 
-        console.log(translatedText);
+        // console.log(translatedText);
         refs.ruWord.value = translatedText;
 
         playSound();
@@ -113,48 +169,10 @@ function onSearch(event) {
         console.log(error);
       });
   }
-
-  // якщо користувач ввів не иснуючу назву країни, то відображає повідомлення
-  if (1 === 0) {
-    Notiflix.Notify.failure(`Oops, there is no country with that name`);
-  }
 }
-// Розмітка для однієї країни
-const createListCountries =
-  item => `<li class="list list__info"><img src="${item.flags.png}" alt="${item.flags.alt}" width="30" height="20"/>
-  <p class = "text">  ${item.name.official}</p></li>`;
-
-// Перебір масива
-const generateContent = array =>
-  array.reduce((acc, item) => {
-    return acc + createListCountries(item);
-  }, '');
 
 // Додавання в DOM
-const insertContent = array => {
-  const result = generateContent(array);
-  refs.countriesList.insertAdjacentHTML('beforeend', result);
-};
-
-// Розмітка з інформацією для однієї країни (прапор, назва, столиця, населення, мови)
-const createInfoCountries = item =>
-  `<li class="list"><img src="${item.flags.png}" alt="${
-    item.flags.alt
-  }" width="60" hight="40"/>
-  <p class="name"><b>${item.name.official}</b></p>
-  <p><b>Capital</b>: ${item.capital}</p>
-   <p><b>Population</b>: ${item.population}</p>
-   <p><b>Languages</b>: ${Object.values(item.languages).join(', ')}</p></li>
-  `;
-
-// Перебір масива
-const generateContentInfo = array =>
-  array.reduce((acc, item) => {
-    return acc + createInfoCountries(item);
-  }, '');
-
-// Додавання в DOM
-const insertContentInfo = array => {
-  const result = generateContentInfo(array);
-  refs.countriesInfo.insertAdjacentHTML('beforeend', result);
-};
+// const insertContentInfo = array => {
+//   const result = generateContentInfo(array);
+//   refs.countriesInfo.insertAdjacentHTML('beforeend', result);
+// };
