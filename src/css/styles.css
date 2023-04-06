@@ -90,3 +90,13 @@ text-align: center;
 margin-top: 50px;
 margin-bottom: 80px;
  }
+ .div-word{
+  display: flex;
+  flex-wrap: wrap;
+   margin: 5px;
+ }
+
+ .word{
+  margin: 0;
+  padding-left: 6px;
+ }

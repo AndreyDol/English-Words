@@ -29,6 +29,8 @@ const refs = {
   buttonAdd: document.querySelector('.button-add'),
   buttonNext: document.querySelector('.button-next'),
   buttonDel: document.querySelector('.button-del'),
+  buttonFile: document.getElementById('file'),
+  divText: document.querySelector('.div-text'),
 };
 //Герерация рамдомного числа
 const random = namber => Math.floor(Math.random() * namber);
@@ -72,15 +74,49 @@ refs.buttonAdd.addEventListener('click', addToBase);
 refs.buttonNext.addEventListener('click', next);
 refs.buttonDel.addEventListener('click', delInBase);
 
+refs.buttonFile.addEventListener('change', function (e) {
+  if (e.target.files[0]) {
+    // document.body.append('You selected ' + e.target.files[0].name);
+    let file = e.target.files[0];
+    let reader = new FileReader();
+    reader.readAsText(file);
+    reader.onload = function () {
+      txt = reader.result;
+      //txtArray = txt.split('\n');
+      //console.log(txtArray);
+      markup(txt);
+    };
+    reader.onerror = function () {
+      console.log(reader.error);
+    };
+  }
+});
+
+function markup(txt) {
+  const txtStringArray = txt.split('\n');
+  let text = '<div>';
+  for (let i = 0; i < txtStringArray.length; i++) {
+    const txtWordArray = txtStringArray[i].split(' ');
+    text += `<div class="div-word">`;
+    for (let i2 = 0; i2 < txtWordArray.length; i2++) {
+      text += `<p class="word">${txtWordArray[i2]} </p>`;
+    }
+text += '</div>';
+  }
+text += '</div>';
+  refs.divText.innerHTML = '';
+  refs.divText.insertAdjacentHTML('afterend', text);
+}
+
 function delInBase() {
   data.array.splice(randomWord, 1);
   console.log(randomWord);
   Notiflix.Notify.info(`Word ${refs.engText.textContent} deleted`);
   updateData(1, data);
-   randomWord = randomGenWord();
-   refs.engText.textContent = data.array[randomWord][0];
-   playSoundEng();
-   refs.ruText.textContent = '?';
+  randomWord = randomGenWord();
+  refs.engText.textContent = data.array[randomWord][0];
+  playSoundEng();
+  refs.ruText.textContent = '?';
 }
 
 function next() {
@@ -112,7 +148,8 @@ function addToBase() {
   if (
     refs.engWord.value !== '' &&
     refs.ruWord.value !== '' &&
-    checkWordInBase()  ) {
+    checkWordInBase()
+  ) {
     console.log(data);
     data.array.push(translatePair);
     console.log(data);
