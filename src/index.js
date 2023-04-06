@@ -13,7 +13,7 @@ let data = {
   id: '1',
 };
 let randomWord = '';
-
+let fontSize = 16;
 const URL = 'https://64298cb1ebb1476fcc4bb610.mockapi.io';
 
 // Пошук поля вводу та місця для додавання списку в DOM
@@ -31,6 +31,10 @@ const refs = {
   buttonDel: document.querySelector('.button-del'),
   buttonFile: document.getElementById('file'),
   divText: document.querySelector('.div-text'),
+  inputWrap: document.querySelector('.text-size-wrap'),
+  textspan: document.querySelector('.text-span'),
+  buttonMinus: document.querySelector('.button-minus'),
+  buttonPlus: document.querySelector('.button-plus'),
 };
 //Герерация рамдомного числа
 const random = namber => Math.floor(Math.random() * namber);
@@ -73,6 +77,28 @@ refs.buttonPlayEng.addEventListener('click', playSoundEng);
 refs.buttonAdd.addEventListener('click', addToBase);
 refs.buttonNext.addEventListener('click', next);
 refs.buttonDel.addEventListener('click', delInBase);
+refs.divText.addEventListener("dblclick", wordToBase);
+
+function wordToBase(e) {
+
+  console.log(e.target.textContent);
+   Notiflix.Notify.info(`Word ${e.target.textContent} added`);
+ };
+
+refs.buttonMinus.addEventListener("click", function (e) {
+  fontSize--;
+  refs.divText.style.fontSize = fontSize + 'px';
+ // refs.inputWrap.style.fontSize = fontSize + 'px';
+  refs.textspan.textContent = fontSize;
+});
+  
+refs.buttonPlus.addEventListener('click', function (e) {
+  fontSize++;
+  refs.divText.style.fontSize = fontSize + 'px';
+  //refs.inputWrap.style.fontSize = fontSize + 'px';
+  refs.textspan.textContent = fontSize;
+}); 
+
 
 refs.buttonFile.addEventListener('change', function (e) {
   if (e.target.files[0]) {
@@ -94,7 +120,7 @@ refs.buttonFile.addEventListener('change', function (e) {
 
 function markup(txt) {
   const txtStringArray = txt.split('\n');
-  let text = '<div>';
+  let text = "";
   for (let i = 0; i < txtStringArray.length; i++) {
     const txtWordArray = txtStringArray[i].split(' ');
     text += `<div class="div-word">`;
@@ -103,9 +129,9 @@ function markup(txt) {
     }
 text += '</div>';
   }
-text += '</div>';
+  
   refs.divText.innerHTML = '';
-  refs.divText.insertAdjacentHTML('afterend', text);
+  refs.divText.insertAdjacentHTML('beforeend', text);
 }
 
 function delInBase() {
