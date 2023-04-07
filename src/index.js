@@ -36,12 +36,12 @@ const refs = {
   buttonMinus: document.querySelector('.button-minus'),
   buttonPlus: document.querySelector('.button-plus'),
 };
-//Герерация рамдомного числа
+//Генерація рамдомного числа
 const random = namber => Math.floor(Math.random() * namber);
 //Генерациярандомного слова з бази
 const randomGenWord = () => random(data.array.length);
 
-//Приймає данні зсайту
+//Приймає данні з сайту
 const readData = () => {
   return fetch(`${URL}/data`).then(res => {
     if (res.ok) {
@@ -77,7 +77,7 @@ refs.buttonPlayEng.addEventListener('click', playSoundEng);
 refs.buttonAdd.addEventListener('click', addToBase);
 refs.buttonNext.addEventListener('click', next);
 refs.buttonDel.addEventListener('click', delInBase);
-refs.divText.addEventListener("dblclick", wordToBase);
+refs.divText.addEventListener("click", wordToBase);
 
 function wordToBase(e) {
 
@@ -90,6 +90,8 @@ refs.buttonMinus.addEventListener("click", function (e) {
   refs.divText.style.fontSize = fontSize + 'px';
  // refs.inputWrap.style.fontSize = fontSize + 'px';
   refs.textspan.textContent = fontSize;
+   markup(txt);
+ 
 });
   
 refs.buttonPlus.addEventListener('click', function (e) {
@@ -97,6 +99,7 @@ refs.buttonPlus.addEventListener('click', function (e) {
   refs.divText.style.fontSize = fontSize + 'px';
   //refs.inputWrap.style.fontSize = fontSize + 'px';
   refs.textspan.textContent = fontSize;
+   markup(txt);
 }); 
 
 
@@ -125,7 +128,9 @@ function markup(txt) {
     const txtWordArray = txtStringArray[i].split(' ');
     text += `<div class="div-word">`;
     for (let i2 = 0; i2 < txtWordArray.length; i2++) {
-      text += `<p class="word">${txtWordArray[i2]} </p>`;
+      text += `<p class="word" style="padding-left: ${fontSize/2.6}px;">${
+        txtWordArray[i2]
+      } </p>`;
     }
 text += '</div>';
   }
