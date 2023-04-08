@@ -80,6 +80,7 @@ const updateData = (id, dataPut) => {
 refs.buttonPlay.addEventListener('click', playSound);
 refs.buttonPlayEng.addEventListener('click', playSoundEng);
 refs.buttonAdd.addEventListener('click', addToBase);
+refs.popupButton.addEventListener('click', addToBase);
 refs.buttonNext.addEventListener('click', next);
 refs.buttonDel.addEventListener('click', delInBase);
 refs.divText.addEventListener('mousedown', wordToBase);
@@ -116,8 +117,7 @@ function wordToBase(e) {
         refs.popupButton.textContent = currentWord + ' - ' + translatedText;
         refs.engWord.value = currentWord;
         refs.ruWord.value = translatedText;
-        refs.popupButton.addEventListener('click', addToBase)
-    //   console.log(getEventListeners(refs.popupButton)); 
+        //   console.log(getEventListeners(refs.popupButton));
         const widthWindow = refs.divText.offsetWidth;
         // const widthMes = refs.popupButton.offsetWidth;
         let x = e.clientX;
@@ -250,9 +250,9 @@ function addToBase() {
     refs.ruWord.value !== '' &&
     checkWordInBase()
   ) {
-  //  console.log(data);
+    //  console.log(data);
     data.array.push(translatePair);
-   // console.log(data);
+    // console.log(data);
     updateData(1, data);
     Notiflix.Notify.success(`Words added to base. Now - ${data.array.length} `);
   } else if (!checkWordInBase()) Notiflix.Notify.info(`Word already in base.`);
