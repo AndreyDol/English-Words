@@ -139,6 +139,7 @@ width:300px;
 }
 
 .popup-button {
+  font-weight: 700;
   display: none;
   position: fixed;
   padding: 10px;
@@ -146,4 +147,5 @@ width:300px;
   border-radius: 5px;
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
   z-index: 1;
+  
 }

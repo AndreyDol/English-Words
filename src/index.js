@@ -7,8 +7,10 @@ import Notiflix from 'notiflix';
 import axios from 'axios';
 const DEBOUNCE_DELAY = 700;
 let translatedText;
-let txt = "";
+let txt = '';
 let word = '';
+let currentWord = '';
+let timeOut;
 let data = {
   array: [],
   id: '1',
@@ -36,9 +38,9 @@ const refs = {
   textspan: document.querySelector('.text-span'),
   buttonMinus: document.querySelector('.button-minus'),
   buttonPlus: document.querySelector('.button-plus'),
-   popupButton : document.querySelector('.popup-button'),
+  popupButton: document.querySelector('.popup-button'),
 };
-
+let currentWordTarget = refs.divText;
 //Генерація рамдомного числа
 const random = namber => Math.floor(Math.random() * namber);
 //Генерациярандомного слова з бази
@@ -80,17 +82,21 @@ refs.buttonPlayEng.addEventListener('click', playSoundEng);
 refs.buttonAdd.addEventListener('click', addToBase);
 refs.buttonNext.addEventListener('click', next);
 refs.buttonDel.addEventListener('click', delInBase);
-refs.divText.addEventListener("click", wordToBase);
+refs.divText.addEventListener('mousedown', wordToBase);
 
 function wordToBase(e) {
+  currentWordTarget.style.fontWeight = 400;
+  clearTimeout(timeOut);
+  //console.log(e.target);
+  let input = e.target.textContent.toLowerCase().trim();
 
-  console.log(e.target.textContent);
-  console.log(refs.divText.offsetWidth);
-  console.log(refs.popupButton.textContent);
-   refs.popupButton.style.display = 'block';
-   refs.popupButton.style.left = e.clientX + 20 + 'px';
-  refs.popupButton.style.top = e.clientY + 20 + 'px';
-  let input = e.target.textContent;
+  if (input.indexOf(' ') !== -1) return;
+  if (input.startsWith("'")) input = input.slice(1);
+  if (input.endsWith("'")) input = input.slice(0, -1);
+  if (input.endsWith('.') || input.endsWith(',')) {
+    input = input.slice(0, -1);
+  }
+  currentWord = input;
   if (input !== '') {
     const sl = 'en';
     const tl = 'ru';
@@ -101,39 +107,70 @@ function wordToBase(e) {
       .get(translateUrl)
       .then(function (response) {
         translatedText = response.data[0][0][0];
+        currentWordTarget = e.target;
+        e.target.style.fontWeight = 700;
+        setTimeout(function () {
+          e.target.style.fontWeight = 400;
+        }, 5000);
+        refs.popupButton.style.fontSize = fontSize + 'px';
+        refs.popupButton.textContent = currentWord + ' - ' + translatedText;
+        refs.engWord.value = currentWord;
+        refs.ruWord.value = translatedText;
+        refs.popupButton.addEventListener('click', addToBase)
+    //   console.log(getEventListeners(refs.popupButton)); 
+        const widthWindow = refs.divText.offsetWidth;
+        // const widthMes = refs.popupButton.offsetWidth;
+        let x = e.clientX;
+        if (x < 20) x = 20;
+        if (x > widthWindow - 200) x = widthWindow - 200;
+        refs.popupButton.style.left = x + 'px';
+        // console.log(widthWindow);
+        // console.log(widthMes);
+        refs.popupButton.style.top = e.clientY - 65 + 'px';
 
-        // console.log(translatedText);
-        refs.popupButton.textContent = translatedText;
-
-       // playSound();
+        refs.popupButton.style.display = 'block';
+        timeOut = setTimeout(popupButtonOff, 5000);
 
         // do something with the translated text
       })
       .catch(function (error) {
         console.log(error);
       });
+
+    if (input !== '') {
+      try {
+        const audio = new Audio(
+          `https://api.dictionaryapi.dev/media/pronunciations/en/${input}-us.mp3`
+        );
+        audio.play();
+      } catch (e) {
+        console.log(e);
+      }
+    }
   }
 
- // Notiflix.Notify.info(`Word ${e.target.textContent} added`);
- };
+  // Notiflix.Notify.info(`Word ${e.target.textContent} added`);
+}
 
-refs.buttonMinus.addEventListener("click", function (e) {
+function popupButtonOff() {
+  refs.popupButton.style.display = 'none';
+}
+
+refs.buttonMinus.addEventListener('click', function (e) {
   fontSize--;
   refs.divText.style.fontSize = fontSize + 'px';
- // refs.inputWrap.style.fontSize = fontSize + 'px';
+  // refs.inputWrap.style.fontSize = fontSize + 'px';
   refs.textspan.textContent = fontSize;
-   markup(txt);
- 
+  markup(txt);
 });
-  
+
 refs.buttonPlus.addEventListener('click', function (e) {
   fontSize++;
   refs.divText.style.fontSize = fontSize + 'px';
   //refs.inputWrap.style.fontSize = fontSize + 'px';
   refs.textspan.textContent = fontSize;
-   markup(txt);
-}); 
-
+  markup(txt);
+});
 
 refs.buttonFile.addEventListener('change', function (e) {
   if (e.target.files[0]) {
@@ -155,18 +192,18 @@ refs.buttonFile.addEventListener('change', function (e) {
 
 function markup(txt) {
   const txtStringArray = txt.split('\n');
-  let text = "";
+  let text = '';
   for (let i = 0; i < txtStringArray.length; i++) {
     const txtWordArray = txtStringArray[i].split(' ');
     text += `<div class="div-word">`;
     for (let i2 = 0; i2 < txtWordArray.length; i2++) {
-      text += `<p class="word" style="padding-left: ${fontSize/2.6}px;">${
+      text += `<p class="word" style="padding-left: ${fontSize / 2.6}px;">${
         txtWordArray[i2]
       } </p>`;
     }
-text += '</div>';
+    text += '</div>';
   }
-  
+
   refs.divText.innerHTML = '';
   refs.divText.insertAdjacentHTML('beforeend', text);
 }
@@ -213,9 +250,9 @@ function addToBase() {
     refs.ruWord.value !== '' &&
     checkWordInBase()
   ) {
-    console.log(data);
+  //  console.log(data);
     data.array.push(translatePair);
-    console.log(data);
+   // console.log(data);
     updateData(1, data);
     Notiflix.Notify.success(`Words added to base. Now - ${data.array.length} `);
   } else if (!checkWordInBase()) Notiflix.Notify.info(`Word already in base.`);
