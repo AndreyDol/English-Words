@@ -35,7 +35,9 @@ const refs = {
   textspan: document.querySelector('.text-span'),
   buttonMinus: document.querySelector('.button-minus'),
   buttonPlus: document.querySelector('.button-plus'),
+   popupButton : document.querySelector('.popup-button'),
 };
+
 //Генерація рамдомного числа
 const random = namber => Math.floor(Math.random() * namber);
 //Генерациярандомного слова з бази
@@ -82,7 +84,36 @@ refs.divText.addEventListener("click", wordToBase);
 function wordToBase(e) {
 
   console.log(e.target.textContent);
-   Notiflix.Notify.info(`Word ${e.target.textContent} added`);
+  console.log(refs.divText.offsetWidth);
+  console.log(refs.popupButton.textContent);
+   refs.popupButton.style.display = 'block';
+   refs.popupButton.style.left = e.clientX + 20 + 'px';
+  refs.popupButton.style.top = e.clientY + 20 + 'px';
+  let input = e.target.textContent;
+  if (input !== '') {
+    const sl = 'en';
+    const tl = 'ru';
+
+    let translateUrl = `https://translate.googleapis.com/translate_a/single?format=text&client=gtx&sl=${sl}&tl=${tl}&dt=t&q=${input}`;
+    // sl – язык оригинала, tl – язык для перевода, originalText – текст запроса (можно использовать результат string.match(/.{1,2000}(?=\.)/gi))
+    axios
+      .get(translateUrl)
+      .then(function (response) {
+        translatedText = response.data[0][0][0];
+
+        // console.log(translatedText);
+        refs.popupButton.textContent = translatedText;
+
+       // playSound();
+
+        // do something with the translated text
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
+
+ // Notiflix.Notify.info(`Word ${e.target.textContent} added`);
  };
 
 refs.buttonMinus.addEventListener("click", function (e) {
