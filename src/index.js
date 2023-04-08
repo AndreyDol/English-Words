@@ -7,6 +7,7 @@ import Notiflix from 'notiflix';
 import axios from 'axios';
 const DEBOUNCE_DELAY = 700;
 let translatedText;
+let txt = "";
 let word = '';
 let data = {
   array: [],
