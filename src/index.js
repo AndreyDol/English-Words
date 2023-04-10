@@ -1,6 +1,5 @@
 // Создай фронтенд часть приложения поиска данных о стране по её частичному или полному имени.
 
-import { fetchCountries } from './js/fetchCountries';
 import './css/styles.css';
 import debounce from 'lodash.debounce';
 import Notiflix from 'notiflix';
@@ -8,7 +7,7 @@ import axios from 'axios';
 const DEBOUNCE_DELAY = 700;
 let translatedText;
 let txt = '';
-let word = '';
+let randomWord = '';
 let currentWord = '';
 let timeOut;
 let data = {
@@ -19,9 +18,8 @@ let voiceIndex = 0;
 let voices = window.speechSynthesis.getVoices();
 window.speechSynthesis.onvoiceschanged = () => {
   voices = window.speechSynthesis.getVoices();
-   voiceChenger();
+  voiceChenger();
 };
-
 
 let fontSize = 16;
 const URL = 'https://64298cb1ebb1476fcc4bb610.mockapi.io';
@@ -89,7 +87,8 @@ refs.buttonPlay.addEventListener('click', function () {
   playVoice(refs.engWord.value.trim().toLowerCase());
 });
 refs.buttonPlayEng.addEventListener('click', function () {
-  playVoice(refs.engText.textContent.trim().toLowerCase()); });
+  playVoice(refs.engText.textContent.trim().toLowerCase());
+});
 refs.buttonAdd.addEventListener('click', addToBase);
 refs.popupButton.addEventListener('click', addToBase);
 refs.buttonNext.addEventListener('click', next);
@@ -98,16 +97,13 @@ refs.divText.addEventListener('mousedown', wordToBase);
 refs.buttonVoice.addEventListener('click', voiceChenger);
 
 function voiceChenger() {
-  
-  for (var i = voiceIndex + 1; i < voices.length; i++){
-    voiceIndex=i;
+  for (var i = voiceIndex + 1; i < voices.length; i++) {
+    voiceIndex = i;
     if (voices[i].lang.includes('en')) {
       voiceIndex = i;
-      refs.buttonVoice.textContent = i + "Voice";
+      refs.buttonVoice.textContent = i + 'Voice';
       return;
-      
     }
-   
   }
   voiceIndex = 0;
   refs.buttonVoice.textContent = 0 + 'Voice';
@@ -165,10 +161,8 @@ function wordToBase(e) {
         console.log(error);
       });
 
-   playVoice(input);
+    playVoice(input);
   }
-
-  // Notiflix.Notify.info(`Word ${e.target.textContent} added`);
 }
 
 function popupButtonOff() {
@@ -278,7 +272,6 @@ function addToBase() {
     Notiflix.Notify.success(`Words added to base. Now - ${data.array.length} `);
   } else if (!checkWordInBase()) Notiflix.Notify.info(`Word already in base.`);
   else Notiflix.Notify.warning(`Input eng word`);
-  // console.log(translatePair);
 }
 
 // function playSound() {
@@ -292,43 +285,13 @@ function addToBase() {
 //          console.log(`Error loading audio for ${word}`);
 //          return `Error loading audio for ${word}`;
 //       };
-     
+
 //       audio.play();
 //     } catch (e) {
 //       console.log(e);
 //     }
 //   }
 // }
-
-// function playSoundEng() {
-//   word = refs.engText.textContent.trim().toLowerCase();
-//   if (word !== '') {
-//     try {
-//       console.log('Play sound');
-//       const audio = new Audio(
-//         `https://api.dictionaryapi.dev/media/pronunciations/en/${word}-us.mp3`
-//       );
-//        audio.onerror = function () {
-//          console.log(`Error loading audio for ${word}`);
-//          return `Error loading audio for ${word}`;
-//       };
-//       //console.log(voices);
-      
-//       let utterance = new SpeechSynthesisUtterance(word);
-//       if (voices == []) voices = window.speechSynthesis.getVoices();
-//       console.log(voices[3]);
-//       utterance.voice = voices[voiceIndex];
-//       // utterance.voice = voices.find(voice => voice.lang === 'en-US');
-//       refs.ruWord.value = utterance.voice.lang;
-//       speechSynthesis.speak(utterance);
-    
-//      //audio.play();
-//     } catch (e) {
-//       console.log(e);
-//     }
-//   }
-// }
-
 
 function playVoice(words) {
   // if (voices == []) voices = window.speechSynthesis.getVoices();
@@ -340,10 +303,8 @@ function playVoice(words) {
     } catch (error) {
       console.error('Ошибка синтеза речи:', error);
     }
-
   }
 }
-
 
 // Додає слухача та використовує функцію debounce, яка робить HTTP-запит через 300мс після того, як користувач перестав вводити текст
 refs.engWord.addEventListener('input', debounce(onSearch, DEBOUNCE_DELAY));
@@ -377,9 +338,3 @@ function onSearch(event) {
       });
   }
 }
-
-// Додавання в DOM
-// const insertContentInfo = array => {
-//   const result = generateContentInfo(array);
-//   refs.countriesInfo.insertAdjacentHTML('beforeend', result);
-// };
