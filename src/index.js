@@ -15,7 +15,14 @@ let data = {
   array: [],
   id: '1',
 };
-let randomWord = '';
+let voiceIndex = 0;
+let voices = window.speechSynthesis.getVoices();
+window.speechSynthesis.onvoiceschanged = () => {
+  voices = window.speechSynthesis.getVoices();
+   voiceChenger();
+};
+
+
 let fontSize = 16;
 const URL = 'https://64298cb1ebb1476fcc4bb610.mockapi.io';
 
@@ -39,6 +46,7 @@ const refs = {
   buttonMinus: document.querySelector('.button-minus'),
   buttonPlus: document.querySelector('.button-plus'),
   popupButton: document.querySelector('.popup-button'),
+  buttonVoice: document.querySelector('.voice-button'),
 };
 let currentWordTarget = refs.divText;
 //Генерація рамдомного числа
@@ -77,13 +85,33 @@ const updateData = (id, dataPut) => {
   });
 };
 
-refs.buttonPlay.addEventListener('click', playSound);
-refs.buttonPlayEng.addEventListener('click', playSoundEng);
+refs.buttonPlay.addEventListener('click', function () {
+  playVoice(refs.engWord.value.trim().toLowerCase());
+});
+refs.buttonPlayEng.addEventListener('click', function () {
+  playVoice(refs.engText.textContent.trim().toLowerCase()); });
 refs.buttonAdd.addEventListener('click', addToBase);
 refs.popupButton.addEventListener('click', addToBase);
 refs.buttonNext.addEventListener('click', next);
 refs.buttonDel.addEventListener('click', delInBase);
 refs.divText.addEventListener('mousedown', wordToBase);
+refs.buttonVoice.addEventListener('click', voiceChenger);
+
+function voiceChenger() {
+  
+  for (var i = voiceIndex + 1; i < voices.length; i++){
+    voiceIndex=i;
+    if (voices[i].lang.includes('en')) {
+      voiceIndex = i;
+      refs.buttonVoice.textContent = i + "Voice";
+      return;
+      
+    }
+   
+  }
+  voiceIndex = 0;
+  refs.buttonVoice.textContent = 0 + 'Voice';
+}
 
 function wordToBase(e) {
   currentWordTarget.style.fontWeight = 400;
@@ -137,16 +165,7 @@ function wordToBase(e) {
         console.log(error);
       });
 
-    if (input !== '') {
-      try {
-        const audio = new Audio(
-          `https://api.dictionaryapi.dev/media/pronunciations/en/${input}-us.mp3`
-        );
-        audio.play();
-      } catch (e) {
-        console.log(e);
-      }
-    }
+   playVoice(input);
   }
 
   // Notiflix.Notify.info(`Word ${e.target.textContent} added`);
@@ -215,7 +234,7 @@ function delInBase() {
   updateData(1, data);
   randomWord = randomGenWord();
   refs.engText.textContent = data.array[randomWord][0];
-  playSoundEng();
+  playVoice(refs.engText.textContent.trim().toLowerCase());
   refs.ruText.textContent = '?';
 }
 
@@ -226,7 +245,9 @@ function next() {
   else {
     randomWord = randomGenWord();
     refs.engText.textContent = data.array[randomWord][0];
-    playSoundEng();
+
+    playVoice(refs.engText.textContent.trim().toLowerCase());
+
     refs.ruText.textContent = '?';
   }
 }
@@ -260,33 +281,70 @@ function addToBase() {
   // console.log(translatePair);
 }
 
-function playSound() {
-  word = refs.engWord.value.trim().toLowerCase();
-  if (word !== '') {
+// function playSound() {
+//   word = refs.engWord.value.trim().toLowerCase();
+//   if (word !== '') {
+//     try {
+//       const audio = new Audio(
+//         `https://api.dictionaryapi.dev/media/pronunciations/en/${word}-us.mp3`
+//       );
+//        audio.onerror = function () {
+//          console.log(`Error loading audio for ${word}`);
+//          return `Error loading audio for ${word}`;
+//       };
+     
+//       audio.play();
+//     } catch (e) {
+//       console.log(e);
+//     }
+//   }
+// }
+
+// function playSoundEng() {
+//   word = refs.engText.textContent.trim().toLowerCase();
+//   if (word !== '') {
+//     try {
+//       console.log('Play sound');
+//       const audio = new Audio(
+//         `https://api.dictionaryapi.dev/media/pronunciations/en/${word}-us.mp3`
+//       );
+//        audio.onerror = function () {
+//          console.log(`Error loading audio for ${word}`);
+//          return `Error loading audio for ${word}`;
+//       };
+//       //console.log(voices);
+      
+//       let utterance = new SpeechSynthesisUtterance(word);
+//       if (voices == []) voices = window.speechSynthesis.getVoices();
+//       console.log(voices[3]);
+//       utterance.voice = voices[voiceIndex];
+//       // utterance.voice = voices.find(voice => voice.lang === 'en-US');
+//       refs.ruWord.value = utterance.voice.lang;
+//       speechSynthesis.speak(utterance);
+    
+//      //audio.play();
+//     } catch (e) {
+//       console.log(e);
+//     }
+//   }
+// }
+
+
+function playVoice(words) {
+  // if (voices == []) voices = window.speechSynthesis.getVoices();
+  if (words !== '') {
     try {
-      const audio = new Audio(
-        `https://api.dictionaryapi.dev/media/pronunciations/en/${word}-us.mp3`
-      );
-      audio.play();
-    } catch (e) {
-      console.log(e);
+      const utterance = new SpeechSynthesisUtterance(words);
+      utterance.voice = voices[voiceIndex];
+      speechSynthesis.speak(utterance);
+    } catch (error) {
+      console.error('Ошибка синтеза речи:', error);
     }
+
   }
 }
-function playSoundEng() {
-  word = refs.engText.textContent.toLowerCase();
-  if (word !== '') {
-    try {
-      console.log('Play sound');
-      const audio = new Audio(
-        `https://api.dictionaryapi.dev/media/pronunciations/en/${word}-us.mp3`
-      );
-      audio.play();
-    } catch (e) {
-      console.log(e);
-    }
-  }
-}
+
+
 // Додає слухача та використовує функцію debounce, яка робить HTTP-запит через 300мс після того, як користувач перестав вводити текст
 refs.engWord.addEventListener('input', debounce(onSearch, DEBOUNCE_DELAY));
 
@@ -310,7 +368,7 @@ function onSearch(event) {
         // console.log(translatedText);
         refs.ruWord.value = translatedText;
 
-        playSound();
+        playVoice(refs.engWord.value.trim().toLowerCase());
 
         // do something with the translated text
       })
