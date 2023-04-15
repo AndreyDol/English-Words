@@ -9,6 +9,7 @@ let txt = '';
 let randomWord = '';
 let currentWord = '';
 let idCurrentWord = 0;
+let speakMore = false;
 let utterance = new SpeechSynthesisUtterance('hi');
 let idEndWord = 0;
 let lastRead = -1;
@@ -106,6 +107,7 @@ refs.buttonPause.addEventListener('click', onPause);
 function onPause(e) {
   if (utterance && e.target.textContent === 'Pause') {
     e.target.textContent = 'Play';
+    speakMore=false;
     speechSynthesis.cancel();
     return;
   }
@@ -120,7 +122,7 @@ function onVoice() {
   if (refs.buttonOnVoice.classList.contains('switch-on')) {
     refs.buttonOnVoice.classList.remove('switch-on');
      refs.buttonPause.disabled = true;
-    // Stop the voice
+    speakMore=false;
     if (utterance) speechSynthesis.cancel();
    
   } else {
@@ -144,6 +146,8 @@ function voiceChenger() {
 }
 
 function wordToBase(e) {
+  speakMore = false;
+  if (utterance) speechSynthesis.cancel();
   if (lastRead !== -1)
     document.querySelector(`[data-js="${lastRead}"]`).style.fontWeight = 400;
   currentWordTarget.style.fontWeight = 400;
@@ -313,6 +317,7 @@ function addToBase() {
 }
 
 function playVoice(words) {
+  speakMore = false;
   if (utterance) speechSynthesis.cancel();
   if (words !== '') {
     try {
@@ -327,9 +332,9 @@ function playVoice(words) {
     }
   }
 }
-function getParagraph(idCurrentWord) {
+function getParagraph(idWord) {
   let paragraph = '';
-  for (let i = idCurrentWord; i < idEndWord; i++) {
+  for (let i = idWord; i < idEndWord; i++) {
     paragraph += document.querySelector(`[data-js="${i}"]`).textContent;
     if (
       paragraph.length > 1000 &&
@@ -341,6 +346,8 @@ function getParagraph(idCurrentWord) {
   return paragraph;
 }
 function playVoiceRead(idCurrentWord) {
+  speakMore = true;
+   
   const words = getParagraph(idCurrentWord + 1);
   // console.log(words);
   if (words !== '') {
@@ -386,12 +393,12 @@ function playVoiceRead(idCurrentWord) {
             utterance.onend = () => {
               console.log(lastRead);
               // Вызываем функцию с новым ID
-              if (
-                idCurrentWord + words.length < idEndWord &&
+              if (speakMore &&
+                lastRead+1 < idEndWord &&
                 refs.buttonOnVoice.classList.contains('switch-on') &&
                 refs.buttonPause.textContent === 'Pause'
               )
-                playVoiceRead(idCurrentWord + words.length);
+                playVoiceRead(lastRead +1);
             };
             break;
           }
