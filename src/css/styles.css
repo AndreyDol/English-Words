@@ -147,5 +147,49 @@ width:300px;
   border-radius: 5px;
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
   z-index: 1;
-  
+ 
+}
+ .button-fix {
+  gap: 30px;
+   left: 180px;
+    right: auto;
+    top: 0px;
+ display: flex;
+  position: fixed;
+  padding: 10px;
+  background-color: #ccc;
+  border-radius: 5px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+  z-index: 1;
+ align-items: center;
+ }
+.switch-btn {
+  display: inline-block;
+  width: 32px;
+  height: 12px;
+  background: #bfbfbf;
+  border-radius: 50%;
+  cursor: pointer;
+  position: relative;
+  transition: all 300ms;
+}
+.switch-btn::after {
+  content: "";
+  height: 18px;
+  width: 18px;
+  background: #fff;
+  border-radius: 50%;
+  top: -3px;
+  left: -3px;
+  transition: all 300ms;
+  box-shadow: 0 0 5px #999;
+  position: absolute;
+}
+.switch-on {
+  background: #fff;
+  box-shadow: inset 0 0 5px #999;
+}
+.switch-on::after {
+  left: 16px;
+  background: #118c4e;
 }

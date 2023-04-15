@@ -1,5 +1,4 @@
-// Создай фронтенд часть приложения поиска данных о стране по её частичному или полному имени.
-
+//Reader for txt and  game
 import './css/styles.css';
 import debounce from 'lodash.debounce';
 import Notiflix from 'notiflix';
@@ -9,6 +8,10 @@ let translatedText;
 let txt = '';
 let randomWord = '';
 let currentWord = '';
+let idCurrentWord = 0;
+let utterance;
+let idEndWord = 0;
+let lastRead = -1;
 let timeOut;
 let data = {
   array: [],
@@ -22,9 +25,9 @@ window.speechSynthesis.onvoiceschanged = () => {
 };
 
 let fontSize = 16;
+//Url for Database
 const URL = 'https://64298cb1ebb1476fcc4bb610.mockapi.io';
 
-// Пошук поля вводу та місця для додавання списку в DOM
 const refs = {
   engWord: document.querySelector('#search-box'),
   ruWord: document.querySelector('#ru-box'),
@@ -45,6 +48,8 @@ const refs = {
   buttonPlus: document.querySelector('.button-plus'),
   popupButton: document.querySelector('.popup-button'),
   buttonVoice: document.querySelector('.voice-button'),
+  buttonOnVoice: document.querySelector('.switch-btn'),
+  buttonPause: document.querySelector('.button-pause'),
 };
 let currentWordTarget = refs.divText;
 //Генерація рамдомного числа
@@ -74,7 +79,7 @@ readData().then(res => {
   //
   // console.log(data.array);
 });
-//Записує данні на сайт
+//Add data to base
 const updateData = (id, dataPut) => {
   return fetch(`${URL}/data/${id}`, {
     method: 'PUT',
@@ -95,6 +100,36 @@ refs.buttonNext.addEventListener('click', next);
 refs.buttonDel.addEventListener('click', delInBase);
 refs.divText.addEventListener('mousedown', wordToBase);
 refs.buttonVoice.addEventListener('click', voiceChenger);
+refs.buttonOnVoice.addEventListener('click', onVoice);
+refs.buttonPause.addEventListener('click', onPause);
+
+function onPause(e) {
+  if (utterance && e.target.textContent === 'Pause') {
+   e.target.textContent = 'Play';
+    speechSynthesis.pause();
+    return;
+  }
+  if (utterance && e.target.textContent === 'Play') {
+    e.target.textContent = 'Pause';
+    speechSynthesis.resume();
+     return;
+  }
+  playVoiceRead(0);
+}
+
+function onVoice(e) {
+  if (refs.buttonOnVoice.classList.contains('switch-on')) {
+    refs.buttonPause.disabled = true;
+  
+    // Stop the voice
+    if (utterance) speechSynthesis.cancel();
+    refs.buttonOnVoice.classList.remove('switch-on');
+  } else {
+  refs.buttonPause.textContent = 'Play';
+    refs.buttonPause.disabled = false;
+    refs.buttonOnVoice.classList.add('switch-on');
+  }
+}
 
 function voiceChenger() {
   for (var i = voiceIndex + 1; i < voices.length; i++) {
@@ -102,6 +137,7 @@ function voiceChenger() {
     if (voices[i].lang.includes('en')) {
       voiceIndex = i;
       refs.buttonVoice.textContent = i + 'Voice';
+      if (utterance) utterance.voice = voices[i];
       return;
     }
   }
@@ -110,9 +146,10 @@ function voiceChenger() {
 }
 
 function wordToBase(e) {
+  if (lastRead !== -1)
+    document.querySelector(`[data-js="${lastRead}"]`).style.fontWeight = 400;
   currentWordTarget.style.fontWeight = 400;
   clearTimeout(timeOut);
-  //console.log(e.target);
   let input = e.target.textContent.toLowerCase().trim();
 
   if (input.indexOf(' ') !== -1) return;
@@ -141,9 +178,7 @@ function wordToBase(e) {
         refs.popupButton.textContent = currentWord + ' - ' + translatedText;
         refs.engWord.value = currentWord;
         refs.ruWord.value = translatedText;
-        //   console.log(getEventListeners(refs.popupButton));
         const widthWindow = refs.divText.offsetWidth;
-        // const widthMes = refs.popupButton.offsetWidth;
         let x = e.clientX;
         if (x < 20) x = 20;
         if (x > widthWindow - 200) x = widthWindow - 200;
@@ -154,7 +189,11 @@ function wordToBase(e) {
 
         refs.popupButton.style.display = 'block';
         timeOut = setTimeout(popupButtonOff, 5000);
+       
+        idCurrentWord = parseInt(e.target.getAttribute('data-js'), 10);
 
+        if (refs.buttonOnVoice.classList.contains('switch-on'))
+          playVoiceRead(idCurrentWord);
         // do something with the translated text
       })
       .catch(function (error) {
@@ -194,7 +233,6 @@ refs.buttonFile.addEventListener('change', function (e) {
     reader.onload = function () {
       txt = reader.result;
       //txtArray = txt.split('\n');
-      //console.log(txtArray);
       markup(txt);
     };
     reader.onerror = function () {
@@ -206,15 +244,18 @@ refs.buttonFile.addEventListener('change', function (e) {
 function markup(txt) {
   const txtStringArray = txt.split('\n');
   let text = '';
+  let idWord = 0;
   for (let i = 0; i < txtStringArray.length; i++) {
     const txtWordArray = txtStringArray[i].split(' ');
     text += `<div class="div-word">`;
     for (let i2 = 0; i2 < txtWordArray.length; i2++) {
-      text += `<p class="word" style="padding-left: ${fontSize / 2.6}px;">${
-        txtWordArray[i2]
-      } </p>`;
+      text += `<p class="word" data-js="${idWord}" style="padding-left: ${
+        fontSize / 2.6
+      }px;">${txtWordArray[i2]} </p>`;
+      idWord++;
     }
     text += '</div>';
+    idEndWord = idWord;
   }
 
   refs.divText.innerHTML = '';
@@ -233,7 +274,6 @@ function delInBase() {
 }
 
 function next() {
-  // console.log(data.array[random(data.array.length)][0]);
   if (refs.ruText.textContent === '?')
     refs.ruText.textContent = data.array[randomWord][1];
   else {
@@ -253,7 +293,7 @@ function checkWordInBase() {
   return true;
 }
 
-//додає слова в базу
+//Add a word to base
 function addToBase() {
   let translatePair = [
     refs.engWord.value.toLowerCase(),
@@ -274,46 +314,117 @@ function addToBase() {
   else Notiflix.Notify.warning(`Input eng word`);
 }
 
-// function playSound() {
-//   word = refs.engWord.value.trim().toLowerCase();
-//   if (word !== '') {
-//     try {
-//       const audio = new Audio(
-//         `https://api.dictionaryapi.dev/media/pronunciations/en/${word}-us.mp3`
-//       );
-//        audio.onerror = function () {
-//          console.log(`Error loading audio for ${word}`);
-//          return `Error loading audio for ${word}`;
-//       };
-
-//       audio.play();
-//     } catch (e) {
-//       console.log(e);
-//     }
-//   }
-// }
-
 function playVoice(words) {
-  // if (voices == []) voices = window.speechSynthesis.getVoices();
+  if (utterance) speechSynthesis.cancel();
   if (words !== '') {
     try {
       const utterance = new SpeechSynthesisUtterance(words);
       utterance.voice = voices[voiceIndex];
+      utterance.rate = 0.7;
+      //  utterance.pitch = 1;
+      //utterance.pause = 500;
       speechSynthesis.speak(utterance);
     } catch (error) {
-      console.error('Ошибка синтеза речи:', error);
+      console.error('Error speechSynthesis:', error);
+    }
+  }
+}
+function getParagraph(idCurrentWord) {
+  let paragraph = '';
+  for (
+    let i = idCurrentWord;
+    i < idEndWord;
+    i++
+  ) {
+    paragraph += document.querySelector(`[data-js="${i}"]`).textContent;
+  }
+  return paragraph;
+}
+function playVoiceRead(idCurrentWord) {
+  const words = getParagraph(idCurrentWord + 1);
+ // console.log(words);
+  if (words !== '') {
+    try {
+      utterance = new SpeechSynthesisUtterance(words);
+      utterance.voice = voices[voiceIndex];
+      utterance.rate = 0.7;
+      //  utterance.pitch = 1;
+      //utterance.pause = 500;
+      utterance.addEventListener('boundary', event => {
+        const element = document.querySelector(`[data-js="${lastRead||idCurrentWord}"]`);
+        //console.log(element);
+        if (element&&!isElementInViewport(element)) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        const wordIndex = event.charIndex;
+        const words = utterance.text.trim().split(' ');
+      //  let currentWord;
+
+        for (let i = 0; i < words.length; i++) {
+          const word = words[i];
+          const start = i === 0 ? 0 : words.slice(0, i).join(' ').length + 1;
+          const end = start + word.length;
+
+          if (wordIndex >= start && wordIndex <= end) {
+            currentWord = word;
+
+            if (lastRead !== -1)
+              document.querySelector(
+                `[data-js="${lastRead}"]`
+              ).style.fontWeight = 400;
+
+            document.querySelector(
+              `[data-js="${idCurrentWord + i + 1}"]`
+            ).style.fontWeight = 700;
+            lastRead = idCurrentWord + i + 1;
+            document.querySelector(
+              `[data-js="${idCurrentWord + i}"]`
+            ).style.fontWeight = 400;
+
+          //  console.log(i);
+            break;
+          }
+        }
+    //    console.log(currentWord);
+      });
+
+      utterance.onstart = () => {
+        refs.buttonPause.textContent = 'Pause';
+      };
+
+      utterance.onpause = () => {
+        refs.buttonPause.textContent = 'Play';
+      };
+      utterance.resume = () => {
+        refs.buttonPause.textContent = 'Pause';
+      };
+
+      utterance.onend = () => {
+        refs.buttonPause.textContent = 'Play';
+      };
+
+      speechSynthesis.speak(utterance);
+    } catch (error) {
+      console.error('Error speechSynthesis:', error);
     }
   }
 }
 
-// Додає слухача та використовує функцію debounce, яка робить HTTP-запит через 300мс після того, як користувач перестав вводити текст
+function isElementInViewport(element) {
+  const rect = element.getBoundingClientRect();
+  return (
+    rect.top >= 0 &&
+    rect.left >= 0 &&
+    rect.bottom <=
+      (window.innerHeight || document.documentElement.clientHeight) &&
+    rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+  );
+}
 refs.engWord.addEventListener('input', debounce(onSearch, DEBOUNCE_DELAY));
 
 function onSearch(event) {
-  // записуємо в змінну введене значення користувачем (trim прибирає пробіли)
-  let input = refs.engWord.value.trim();
 
-  // перевірка, якщо значення не пустий рядок
+  let input = refs.engWord.value.trim();
 
   if (input !== '') {
     const sl = 'en';
