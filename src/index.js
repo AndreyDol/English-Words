@@ -9,7 +9,7 @@ let txt = '';
 let randomWord = '';
 let currentWord = '';
 let idCurrentWord = 0;
-let utterance;
+let utterance = new SpeechSynthesisUtterance('hi');
 let idEndWord = 0;
 let lastRead = -1;
 let timeOut;
@@ -17,7 +17,7 @@ let data = {
   array: [],
   id: '1',
 };
-let voiceIndex = 0;
+let voiceIndex = 1;
 let voices = window.speechSynthesis.getVoices();
 window.speechSynthesis.onvoiceschanged = () => {
   voices = window.speechSynthesis.getVoices();
@@ -105,39 +105,37 @@ refs.buttonPause.addEventListener('click', onPause);
 
 function onPause(e) {
   if (utterance && e.target.textContent === 'Pause') {
-   e.target.textContent = 'Play';
-    speechSynthesis.pause();
+    e.target.textContent = 'Play';
+    speechSynthesis.cancel();
     return;
   }
   if (utterance && e.target.textContent === 'Play') {
     e.target.textContent = 'Pause';
-    speechSynthesis.resume();
-     return;
+    playVoiceRead(lastRead || 0);
+    return;
   }
-  playVoiceRead(0);
 }
 
-function onVoice(e) {
+function onVoice() {
   if (refs.buttonOnVoice.classList.contains('switch-on')) {
-    refs.buttonPause.disabled = true;
-  
+    refs.buttonOnVoice.classList.remove('switch-on');
+     refs.buttonPause.disabled = true;
     // Stop the voice
     if (utterance) speechSynthesis.cancel();
-    refs.buttonOnVoice.classList.remove('switch-on');
+   
   } else {
-  refs.buttonPause.textContent = 'Play';
+    refs.buttonPause.textContent = 'Play';
     refs.buttonPause.disabled = false;
     refs.buttonOnVoice.classList.add('switch-on');
   }
 }
 
 function voiceChenger() {
-  for (var i = voiceIndex + 1; i < voices.length; i++) {
-    voiceIndex = i;
+  voices = window.speechSynthesis.getVoices();
+  for (var i = voiceIndex; i < voices.length; i++) {
     if (voices[i].lang.includes('en')) {
       voiceIndex = i;
-      refs.buttonVoice.textContent = i + 'Voice';
-      if (utterance) utterance.voice = voices[i];
+      refs.buttonVoice.textContent = voiceIndex + 'Voice';
       return;
     }
   }
@@ -189,7 +187,7 @@ function wordToBase(e) {
 
         refs.popupButton.style.display = 'block';
         timeOut = setTimeout(popupButtonOff, 5000);
-       
+
         idCurrentWord = parseInt(e.target.getAttribute('data-js'), 10);
 
         if (refs.buttonOnVoice.classList.contains('switch-on'))
@@ -331,18 +329,20 @@ function playVoice(words) {
 }
 function getParagraph(idCurrentWord) {
   let paragraph = '';
-  for (
-    let i = idCurrentWord;
-    i < idEndWord;
-    i++
-  ) {
+  for (let i = idCurrentWord; i < idEndWord; i++) {
     paragraph += document.querySelector(`[data-js="${i}"]`).textContent;
+    if (
+      paragraph.length > 1000 &&
+      document.querySelector(`[data-js="${i}"]`).textContent.includes('.')
+    ) {
+      return paragraph;
+    }
   }
   return paragraph;
 }
 function playVoiceRead(idCurrentWord) {
   const words = getParagraph(idCurrentWord + 1);
- // console.log(words);
+  // console.log(words);
   if (words !== '') {
     try {
       utterance = new SpeechSynthesisUtterance(words);
@@ -351,14 +351,16 @@ function playVoiceRead(idCurrentWord) {
       //  utterance.pitch = 1;
       //utterance.pause = 500;
       utterance.addEventListener('boundary', event => {
-        const element = document.querySelector(`[data-js="${lastRead||idCurrentWord}"]`);
+        const element = document.querySelector(
+          `[data-js="${lastRead || idCurrentWord}"]`
+        );
         //console.log(element);
-        if (element&&!isElementInViewport(element)) {
+        if (element && element.textContent && !isElementInViewport(element)) {
           element.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
         const wordIndex = event.charIndex;
         const words = utterance.text.trim().split(' ');
-      //  let currentWord;
+        //  let currentWord;
 
         for (let i = 0; i < words.length; i++) {
           const word = words[i];
@@ -381,25 +383,27 @@ function playVoiceRead(idCurrentWord) {
               `[data-js="${idCurrentWord + i}"]`
             ).style.fontWeight = 400;
 
-          //  console.log(i);
+            utterance.onend = () => {
+              console.log(lastRead);
+              // Вызываем функцию с новым ID
+              if (
+                idCurrentWord + words.length < idEndWord &&
+                refs.buttonOnVoice.classList.contains('switch-on') &&
+                refs.buttonPause.textContent === 'Pause'
+              )
+                playVoiceRead(idCurrentWord + words.length);
+            };
             break;
           }
         }
-    //    console.log(currentWord);
+        //    console.log(currentWord);
       });
 
       utterance.onstart = () => {
         refs.buttonPause.textContent = 'Pause';
       };
 
-      utterance.onpause = () => {
-        refs.buttonPause.textContent = 'Play';
-      };
-      utterance.resume = () => {
-        refs.buttonPause.textContent = 'Pause';
-      };
-
-      utterance.onend = () => {
+       utterance.onend = () => {
         refs.buttonPause.textContent = 'Play';
       };
 
@@ -423,7 +427,6 @@ function isElementInViewport(element) {
 refs.engWord.addEventListener('input', debounce(onSearch, DEBOUNCE_DELAY));
 
 function onSearch(event) {
-
   let input = refs.engWord.value.trim();
 
   if (input !== '') {

@@ -150,8 +150,8 @@ width:300px;
  
 }
  .button-fix {
-  gap: 30px;
-   left: 180px;
+  gap: 20px;
+   left: 170px;
     right: auto;
     top: 0px;
  display: flex;
