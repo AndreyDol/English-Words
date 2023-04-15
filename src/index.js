@@ -134,7 +134,7 @@ function onVoice() {
 
 function voiceChenger() {
   voices = window.speechSynthesis.getVoices();
-  for (var i = voiceIndex; i < voices.length; i++) {
+  for (var i = voiceIndex+1; i < voices.length; i++) {
     if (voices[i].lang.includes('en')) {
       voiceIndex = i;
       refs.buttonVoice.textContent = voiceIndex + 'Voice';
