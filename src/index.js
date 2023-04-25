@@ -72,14 +72,15 @@ const readData = () => {
 
 let dataLocal = localStorage.getItem('engword');
 if (dataLocal) dataLocal = JSON.parse(dataLocal);
-  console.log(dataLocal);
+//  console.log(dataLocal);
 readData().then(res => {
   if (res[0].array.length === 0 && !dataLocal) {
-    Notiflix.Notify.info(`Base empty(База пуста, додайте слова)`);
+    Notiflix.Notify.info(`Base empty(База пуста, добавьте слова)`);
     return;
   }
 
-  data = dataLocal||  res[0];
+  data = dataLocal || res[0];
+ //  console.log(res[0]);
   randomWord = randomGenWord();
   refs.engText.textContent = data.array[randomWord][0];
   //
