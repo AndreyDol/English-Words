@@ -60,6 +60,7 @@ const randomGenWord = () => random(data.array.length);
 
 //Приймає данні з сайту
 const readData = () => {
+
   return fetch(`${URL}/data`).then(res => {
     if (res.ok) {
       return res.json();
@@ -69,12 +70,16 @@ const readData = () => {
   });
 };
 
+let dataLocal = localStorage.getItem('engword');
+if (dataLocal) dataLocal = JSON.parse(dataLocal);
+  console.log(dataLocal);
 readData().then(res => {
-  if (res[0].array.length === 0) {
+  if (res[0].array.length === 0 && !dataLocal) {
     Notiflix.Notify.info(`Base empty(База пуста, додайте слова)`);
     return;
   }
-  data = res[0];
+
+  data = dataLocal||  res[0];
   randomWord = randomGenWord();
   refs.engText.textContent = data.array[randomWord][0];
   //
@@ -82,11 +87,13 @@ readData().then(res => {
 });
 //Add data to base
 const updateData = (id, dataPut) => {
-  return fetch(`${URL}/data/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(dataPut),
-  });
+  if (dataPut)  localStorage.setItem('engword', JSON.stringify(dataPut));
+  if (dataPut&&dataPut.length<100){
+    return fetch(`${URL}/data/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dataPut),
+    });}
 };
 
 refs.buttonPlay.addEventListener('click', function () {
