@@ -89,7 +89,7 @@ readData().then(res => {
 //Add data to base
 const updateData = (id, dataPut) => {
   if (dataPut)  localStorage.setItem('engword', JSON.stringify(dataPut));
-  if (dataPut&&dataPut.length<100){
+  if (dataPut&&dataPut.array.length<100){
     return fetch(`${URL}/data/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
