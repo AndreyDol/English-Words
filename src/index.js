@@ -319,6 +319,8 @@ function addToBase() {
     data.array.push(translatePair);
     // console.log(data);
     updateData(1, data);
+    refs.engWord.value = "";
+     refs.ruWord.value= "";
     Notiflix.Notify.success(`Words added to base. Now - ${data.array.length} `);
   } else if (!checkWordInBase()) Notiflix.Notify.info(`Word already in base.`);
   else Notiflix.Notify.warning(`Input eng word`);
