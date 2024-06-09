@@ -59,8 +59,6 @@ let ramdom_data = [];
 function random(namber) {
     let ret = Math.floor(Math.random() * namber);
   ramdom_data.push(ret);
-     ret = Math.floor(Math.random() * namber);
-    ramdom_data.push(ret);
   ret = ramdom_data[Math.floor(Math.random() * ramdom_data.length)];
     random_history_last = ret;
   return ret;
