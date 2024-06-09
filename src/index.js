@@ -54,13 +54,23 @@ const refs = {
 };
 let currentWordTarget = refs.divText;
 //Генерація рамдомного числа
-const random = namber => Math.floor(Math.random() * namber);
+let random_history_last;
+let ramdom_data = [];
+function random(namber) {
+    let ret = Math.floor(Math.random() * namber);
+  ramdom_data.push(ret);
+     ret = Math.floor(Math.random() * namber);
+    ramdom_data.push(ret);
+  ret = ramdom_data[Math.floor(Math.random() * ramdom_data.length)];
+    random_history_last = ret;
+  return ret;
+}
+
 //Генерациярандомного слова з бази
 const randomGenWord = () => random(data.array.length);
 
 //Приймає данні з сайту
 const readData = () => {
-
   return fetch(`${URL}/data`).then(res => {
     if (res.ok) {
       return res.json();
@@ -80,7 +90,7 @@ readData().then(res => {
   }
 
   data = dataLocal || res[0];
- //  console.log(res[0]);
+  //  console.log(res[0]);
   randomWord = randomGenWord();
   refs.engText.textContent = data.array[randomWord][0];
   //
@@ -88,13 +98,14 @@ readData().then(res => {
 });
 //Add data to base
 const updateData = (id, dataPut) => {
-  if (dataPut)  localStorage.setItem('engword', JSON.stringify(dataPut));
-  if (dataPut&&dataPut.array.length<100){
+  if (dataPut) localStorage.setItem('engword', JSON.stringify(dataPut));
+  if (dataPut && dataPut.array.length < 100) {
     return fetch(`${URL}/data/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(dataPut),
-    });}
+    });
+  }
 };
 
 refs.buttonPlay.addEventListener('click', function () {
@@ -115,7 +126,7 @@ refs.buttonPause.addEventListener('click', onPause);
 function onPause(e) {
   if (utterance && e.target.textContent === 'Pause') {
     e.target.textContent = 'Play';
-    speakMore=false;
+    speakMore = false;
     speechSynthesis.cancel();
     return;
   }
@@ -129,10 +140,9 @@ function onPause(e) {
 function onVoice() {
   if (refs.buttonOnVoice.classList.contains('switch-on')) {
     refs.buttonOnVoice.classList.remove('switch-on');
-     refs.buttonPause.disabled = true;
-    speakMore=false;
+    refs.buttonPause.disabled = true;
+    speakMore = false;
     if (utterance) speechSynthesis.cancel();
-   
   } else {
     refs.buttonPause.textContent = 'Play';
     refs.buttonPause.disabled = false;
@@ -142,7 +152,7 @@ function onVoice() {
 
 function voiceChenger() {
   voices = window.speechSynthesis.getVoices();
-  for (var i = voiceIndex+1; i < voices.length; i++) {
+  for (var i = voiceIndex + 1; i < voices.length; i++) {
     if (voices[i].lang.includes('en')) {
       voiceIndex = i;
       refs.buttonVoice.textContent = voiceIndex + 'Voice';
@@ -319,8 +329,8 @@ function addToBase() {
     data.array.push(translatePair);
     // console.log(data);
     updateData(1, data);
-    refs.engWord.value = "";
-     refs.ruWord.value= "";
+    refs.engWord.value = '';
+    refs.ruWord.value = '';
     Notiflix.Notify.success(`Words added to base. Now - ${data.array.length} `);
   } else if (!checkWordInBase()) Notiflix.Notify.info(`Word already in base.`);
   else Notiflix.Notify.warning(`Input eng word`);
@@ -357,7 +367,7 @@ function getParagraph(idWord) {
 }
 function playVoiceRead(idCurrentWord) {
   speakMore = true;
-   
+
   const words = getParagraph(idCurrentWord + 1);
   // console.log(words);
   if (words !== '') {
@@ -403,12 +413,13 @@ function playVoiceRead(idCurrentWord) {
             utterance.onend = () => {
               console.log(lastRead);
               // Вызываем функцию с новым ID
-              if (speakMore &&
-                lastRead+1 < idEndWord &&
+              if (
+                speakMore &&
+                lastRead + 1 < idEndWord &&
                 refs.buttonOnVoice.classList.contains('switch-on') &&
                 refs.buttonPause.textContent === 'Pause'
               )
-                playVoiceRead(lastRead +1);
+                playVoiceRead(lastRead + 1);
             };
             break;
           }
@@ -420,7 +431,7 @@ function playVoiceRead(idCurrentWord) {
         refs.buttonPause.textContent = 'Pause';
       };
 
-       utterance.onend = () => {
+      utterance.onend = () => {
         refs.buttonPause.textContent = 'Play';
       };
 
